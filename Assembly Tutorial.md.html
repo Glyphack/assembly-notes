@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/styles/default.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.3.1/languages/go.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<style>
+	img { max-width:900px; }
+	.codeblock { 
+	background: #B0B0B0; padding:1px 10px 0px 10px; border-radius: 5px; overflow-x:auto; 
+	}
+	code {
+ font-family: monospace; font-size: inherit; color: #202020; 
+	}
+	.inlineCoed {
+ font-family: monospace; font-size: inherit; color: #202020; 
+	}
+</style>
+</head>
+<body style="background: #F0F0F0;">
+<div style="margin: 0 auto; width:1380px;  position: relative;" >
+<div style="width:1000px; padding:20px; margin:0px; z-index: 5; text-align:left; background-color: #DCDCDC; border-radius: 5px; position:absolute; top:0; left:340px;">
+<p><a href="https://cs.lmu.edu/~ray/notes/nasmtutorial/" target="_blank">https://cs.lmu.edu/~ray/notes/nasmtutorial/</a></p>
+<p><a href="https://www.rapidtables.com/convert/number/decimal-to-binary.html" target="_blank">https://www.rapidtables.com/convert/number/decimal-to-binary.html</a></p>
+<p><a href="http://www.penguin.cz/~literakl/intel/intel.html" target="_blank">http://www.penguin.cz/~literakl/intel/intel.html</a></p>
+<p><a href="https://faydoc.tripod.com/cpu/" target="_blank">https://faydoc.tripod.com/cpu/</a></p>
+<p><a href="https://gist.github.com/lancejpollard/1db84c233bcd849b237df76b3a6c4d9e" target="_blank">https://gist.github.com/lancejpollard/1db84c233bcd849b237df76b3a6c4d9e</a></p>
+<p></p>
+<h2 style="margin-left:0px;" id="CPU">CPU</h2>
+<h3 style="margin-left:0px;" id="Cache_Structure">Cache Structure</h3>
+<p><img src="./assets/cpu-cache-structure-32-bit.png" alt="cpu-cache-structure-32-bit.png" style="border-radius: 4px;"" ></p>
+<p><img src="./assets/cpu-cache-structure.png" alt="cpu-cache-structure.png" style="border-radius: 4px;"" ></p>
+<h3 style="margin-left:0px;" id="Set_associative_cache">Set associative cache</h3>
+<p>To handle collisions</p>
+<p><img src="./assets/set-associative-cache-diagram.png" alt="set-associative-cache-diagram.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p></p>
+<h2 style="margin-left:0px;" id="Data_Representation">Data Representation</h2>
+<h3 style="margin-left:0px;" id="Two's_complement">Two's complement</h3>
+<p>To take the two's complement of a number:</p>
+<p>1. take the one's complement (negate)</p>
+<p>2. add 1 (in binary)</p>
+<h3 style="margin-left:0px;" id="Convert_to_floating-point_representation">Convert to floating-point representation</h3>
+<p>1. Conver to binary: e.g. 11.25 -> 1101.01</p>
+<p>2. convert to a normalized form $1.10101 * 2^3 -> 3 + 127=130$ biased exponent</p>
+<p></p>
+<h2 style="margin-left:0px;" id="Flags">Flags</h2>
+<p><img src="./assets/RFLAGS.png" alt="RFLAGS.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h2 style="margin-left:0px;" id="Registers">Registers</h2>
+<p><img src="./assets/registers.png" alt="registers.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h2 style="margin-left:0px;" id="Program_Structure">Program Structure</h2>
+<h3 style="margin-left:0px;" id="Hello_World">Hello World</h3>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+; ----------------------------------------------------------------------------------------
+; Writes &quot;Hello, World&quot; to the console using only system calls. Runs on 64-bit Linux only.
+; To assemble and run:
+;
+;     nasm -felf64 hello.asm &amp;&amp; ld hello.o &amp;&amp; ./a.out
+; ----------------------------------------------------------------------------------------
+
+            global    _start
+
+          section   .text
+_start:   mov       rax, 1                  ; system call for write
+          mov       rdi, 1                  ; file handle 1 is stdout
+          mov       rsi, message            ; address of string to output
+          mov       rdx, 13                 ; number of bytes
+          syscall                           ; invoke operating system to do the write
+          mov       rax, 60                 ; system call for exit
+          xor       rdi, rdi                ; exit code 0
+          syscall                           ; invoke operating system to exit
+
+          section   .data
+message:  db        &quot;Hello, World&quot;, 10      ; note the newline at the end
+
+</pre></code>
+<h4 style="margin-left:0px;" id="BSS_section">BSS section</h4>
+<p>the block starting symbol (abbreviated to . bss or bss) is <b>the portion of an object file, executable, or assembly language code that contains statically allocated variables that are declared but have not been assigned a value yet</b>. It is often referred to as the "bss section" or "bss segment".</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+section .bss
+	num: resb 4
+</pre></code>
+<h3 style="margin-left:0px;" id="Instructions">Instructions</h3>
+<p><img src="./assets/assembly instructions.png" alt="assembly instructions.png" style="border-radius: 4px;"" ></p>
+<h2 style="margin-left:0px;" id="Variables">Variables</h2>
+<p>data types</p>
+<p><img src="./assets/asm-data-types.png" alt="asm-data-types.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p>Define Data</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+bVar db 10 ; byte variable
+cVar db &quot;H&quot; ; single character
+strng db &quot;Hello World&quot; ; string
+wVar dw 5000 ; 16-bit variable
+dVar dd 50000 ; 32-bit variable
+arr dd 100, 200, 300 ; 3 element array
+flt1 dd 3.14159 ; 32-bit float
+qVar dq 1000000000 ; 64-bit variable
+array dd 1,2,3,4,5 ; array
+</pre></code>
+<p>Define Data</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+bArr resb 10 ; 10 element byte array
+wArr resw 50 ; 50 element word array
+dArr resd 100 ; 100 element double arra
+qArr resq 200 ; 200 element quad array
+</pre></code>
+<h2 style="margin-left:0px;" id="Register_Extension">Register Extension</h2>
+<p><img src="./assets/register-extension.png" alt="register-extension.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h3 style="margin-left:0px;" id="Narrowing">Narrowing</h3>
+<p>Move from larger register/variable to smaller one. Have to make sure conversion is right.</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+mov rax, 50
+mov byte [bval], al
+</pre></code>
+<p></p>
+<h3 style="margin-left:0px;" id="Widening">Widening</h3>
+<h4 style="margin-left:0px;" id="unsigned">unsigned</h4>
+<p>Method 1</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+mov rax, 50
+mov rbx, 0
+mov bl, al
+</pre></code>
+<p></p>
+<p>Method 2 using <code class="inlineCoed">movzx</code> not available for 32-bit to 64-bit, solution: a mov instruction with a double-word register destination operand with a doubleword source operand will zero the upper-order double-word of the quadword destination</p>
+<p>register</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+mov al, 50
+movzx, rbx, al
+</pre></code>
+<p></p>
+<p>For A register</p>
+<p>cbw, cwd, cwde, cdq, cdqe, cdo</p>
+<p><img src="./assets/c-asm.png" alt="c-asm.png" style="border-radius: 4px;"" ></p>
+<h4 style="margin-left:0px;" id="Signed">Signed</h4>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+mov bl, -50
+movsx rax, bl
+call writeNum
+</pre></code>
+<p><img src="./assets/asm-movsx.png" alt="asm-movsx.png" style="border-radius: 4px;"" ></p>
+<h2 style="margin-left:0px;" id="Arithmetic">Arithmetic</h2>
+<h3 style="margin-left:0px;" id="Add">Add</h3>
+<p><code class="inlineCoed">add</code></p>
+<p>If a memory to memory addition operation is required, two instructions must be used</p>
+<p>neg, not, adc(arry), sbb(orrow)</p>
+<p></p>
+<p><code class="inlineCoed">inc</code></p>
+<p>When using a memory operand, the explicit type specification (e.g., byte, word, dword, qword) is required to clearly define the size.</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+inc rax
+
+int byte [bNum]
+</pre></code>
+<p><code class="inlineCoed">adc</code></p>
+<p><code class="inlineCoed">&lt;dest&gt; = &lt;dest&gt; + &lt;src&gt; + &lt;carryBit&gt;</code></p>
+<p>Example adding 128-bit numbers</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+dquad1 ddq 0x1A000000000000000
+dquad2 ddq 0x2C000000000000000
+dqSum ddq 0
+
+mov rax, qword [dquad1]
+mov rdx, qword [dquad1+8]
+add rax, qword [dquad2]
+adc rdx, qword [dquad2+8]
+mov qword [dqSum], rax
+mov qword [dqSum+8], rdx
+</pre></code>
+<p></p>
+<h3 style="margin-left:0px;" id="Sub">Sub</h3>
+<p><code class="inlineCoed">sub</code></p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+; bAns = bNum1 - bNum2
+mov al, byte [bNum1]
+sub al, byte [bNum2]
+mov byte [bAns], al
+</pre></code>
+<p><code class="inlineCoed">dec</code></p>
+<p></p>
+<p><code class="inlineCoed">sbb</code> sub with borrow from previous operation</p>
+<h3 style="margin-left:0px;" id="Mul">Mul</h3>
+<p><code class="inlineCoed">mul</code></p>
+<p><img src="./assets/asm-mul-instruction.png" alt="asm-mul-instruction.png" style="border-radius: 4px;"" ></p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+; dqAns4 = qNumA * qNumB
+mov rax, qword [qNumA]
+mul qword [qNumB] ; result in rdx:rax
+mov qword [dqAns4], rax
+mov qword [dqAns4+8], rdx
+</pre></code>
+<p>Multiply by a constant</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+mov rax, 50
+imul rax, 10 ; rax = rax*10
+</pre></code>
+<p>imul</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+; dAns2 = dNumA * dNumB
+mov eax, dword [dNumA]
+imul eax, dword [dNumB] ; result in eax
+mov dword [dAns2], eax
+</pre></code>
+<p></p>
+<p><img src="./assets/assembly-mul-nums.png" alt="assembly-mul-nums.png" style="border-radius: 4px;"" ></p>
+<p><code class="inlineCoed">imul</code></p>
+<p>Cannot use 8-bit operand as dest</p>
+<p></p>
+<h3 style="margin-left:0px;" id="Div">Div </h3>
+<p><img src="./assets/asm-div.png" alt="asm-div.png" style="border-radius: 4px;"" ></p>
+<p><code class="inlineCoed">div,idiv src</code></p>
+<p>Example for doubleWords</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+; dAns1 = dNumA / 7 (signed)
+mov eax, dword [dNumA]
+cdq ; eax → edx:eax
+mov ebx, 7
+idiv ebx ; eax = edx:eax / 7
+mov dword [dAns1], eax
+
+; dAns2 = dNumA / dNumB (signed)
+mov eax, dword [dNumA]
+cdq ; eax → edx:eax
+idiv dword [dNumB] ; eax = edx:eax/dNumB
+mov dword [dAns2], eax
+mov dword [dRem2], edx ; edx = edx:eax%dNumB
+</pre></code>
+<p></p>
+<h3 style="margin-left:0px;" id="neg,_not">neg, not</h3>
+<p>neg: 2's complement</p>
+<p>not: convert 1's to 0's</p>
+<h3 style="margin-left:0px;" id="Shift">Shift</h3>
+<p><img src="./assets/asm-shift.png" alt="asm-shift.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p><img src="./assets/shift-arithmetic.png" alt="shift-arithmetic.png" style="border-radius: 4px;"" ></p>
+<p><img src="./assets/shift-arithmetic-asm.png" alt="shift-arithmetic-asm.png" style="border-radius: 4px;"" ></p>
+<h3 style="margin-left:0px;" id="Rotate">Rotate</h3>
+<p><img src="./assets/rotate-asm.png" alt="rotate-asm.png" style="border-radius: 4px;"" ></p>
+<h2 style="margin-left:0px;" id="Addressing">Addressing</h2>
+<p><img src="./assets/assembly-addressing.png" alt="assembly-addressing.png" style="border-radius: 4px;"" ></p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+dquad1 ddq 0x1A000000000000000
+mov rax, qword [dquad1]
+mov rdx, qword [dquad1+8]
+</pre></code>
+<p></p>
+<p>Access Array</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+[ baseAddr + (indexReg * scaleValue ) + displacement ]
+
+lst dd 101, 103, 105, 107
+
+mov rbx, lst
+mov rsi, 8
+mov eax, dword [lst+8]
+mov eax, dword [rbx+8]
+mov eax, dword [rbx+rsi]
+
+</pre></code>
+<p></p>
+<h2 style="margin-left:0px;" id="Jumps">Jumps</h2>
+<p><img src="./assets/Pasted image 20220505095933.png" alt="Pasted image 20220505095933.png" style="border-radius: 4px;"" ></p>
+<h2 style="margin-left:0px;" id="Flag_Manipulation">Flag Manipulation</h2>
+<p>stc -> set carry flag to 1</p>
+<p>clc -> clear carry flag 0 </p>
+<p></p>
+<p>test -> and operands and affect flags</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+test rbx, rcx
+je ; jumps if both are not 1
+</pre></code>
+<p></p>
+<h2 style="margin-left:0px;" id="Bit_manipulation">Bit manipulation</h2>
+<p><b>bsf</b></p>
+<p>find the first least significant one bit and from source operand and put the index in dest operand. the bit index if offset from bit 0.</p>
+<p>ZF = 1 if the bit is found.</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+bsf rax, rbx
+</pre></code>
+<p><b>bsr</b></p>
+<p>is exactly the same but for most significant one.</p>
+<p></p>
+<p>bt source, bitOffset</p>
+<p>set the selected bit with the second operand from the first operand to CF</p>
+<p>btc -> complement</p>
+<p>bts -> sets to 1</p>
+<p>btr -> reset the value to 0</p>
+<p></p>
+<h2 style="margin-left:0px;" id="Swapping">Swapping</h2>
+<p>xchg</p>
+<p>exchange first with second. First operand must be register</p>
+<p></p>
+<p>xadd</p>
+<p>put sum of the operation in first operand and copy previous value of first operand to second operand</p>
+<p></p>
+<h2 style="margin-left:0px;" id="Conditional_Move">Conditional Move</h2>
+<p><img src="./assets/Pasted image 20220505100022.png" alt="Pasted image 20220505100022.png" style="border-radius: 4px;"" ></p>
+<h2 style="margin-left:0px;" id="Loops">Loops</h2>
+<p><img src="./assets/assembly-loops.png" alt="assembly-loops.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h3 style="margin-left:0px;" id="String_manipulation">String manipulation</h3>
+<p><img src="./assets/Pasted image 20220504203001.png" alt="Pasted image 20220504203001.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h3 style="margin-left:0px;" id="Check_positive_or_negative">Check positive or negative</h3>
+<p><img src="./assets/Pasted image 20220504211604.png" alt="Pasted image 20220504211604.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h2 style="margin-left:0px;" id="Sys_Calls">Sys Calls</h2>
+<p><img src="./assets/Pasted image 20220312212431.png" alt="Pasted image 20220312212431.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p>Syscall set r11 to RFlag</p>
+<p></p>
+<p></p>
+<h2 style="margin-left:0px;" id="Arrays">Arrays</h2>
+<h3 style="margin-left:0px;" id="Save_num_in_Array">Save num in Array</h3>
+<p>Read input to array and print</p>
+<pre class="codeblock"><code style="tab-size: 4;" class="assembly codeblock">assembly
+%include &quot;in_out.asm&quot;
+
+section .bss
+    a:   resd 1000
+section .data
+
+section .text
+    global _start
+_start:
+    call readNum
+	mov r8, rax
+	mov r9, 0
+	mov rsi, a
+loop:
+	cmp r8, r9
+	je printArray
+    call readNum
+    mov [rsi], al ; Move a number in range 0,255 to a
+    inc rsi
+	inc r9
+    jmp loop
+
+printArray:
+    mov r9, 0
+    mov rsi, a
+printNextElement:
+	cmp r8, r9
+	je printArrayReverse
+	mov al, [rsi]
+	call writeNum
+	inc r9
+	inc rsi
+	jmp printNextElement
+	
+printArrayReverse:
+	call newLine
+	mov r9, r8
+	dec r9
+	mov rsi, a
+	add rsi, r9
+printNextElementReverse:
+	cmp r9, 0
+	jb Exit
+	mov al, [rsi]
+	call writeNum
+	dec rsi
+	dec r9
+	jmp printNextElementReverse
+	
+
+Exit:
+    mov eax,1
+    mov edi, 0
+    int 80h
+</pre></code>
+<p></p>
+<h3 style="margin-left:0px;" id="Read_string_to_Array">Read string to Array</h3>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+section .bss
+    a resd 1000
+_start:
+    mov rax, sys_read
+    mov rsi, a
+    mov rdi, stdin
+    mov rdx, 100
+    syscall
+
+    mov rsi, a
+    add rsi, 5 ; Skip first 5 characters from string
+    call printString
+</pre></code>
+<p></p>
+<p></p>
+<h2 style="margin-left:0px;" id="Files">Files</h2>
+<p>Read from file line by line</p>
+<p><img src="./assets/Pasted image 20220514173553.png" alt="Pasted image 20220514173553.png" style="border-radius: 4px;"" ></p>
+<h2 style="margin-left:0px;" id="Idioms">Idioms</h2>
+<p>0 the register</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+xor rax, rax
+</pre></code>
+<p></p>
+<p>Check if register is zero</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+test rcx, rcx
+je ... ; will jump if rcx is zero
+
+test rax, rax
+cmovne  ... ; will move data if rax is not zero
+</pre></code>
+<p></p>
+<h2 style="margin-left:0px;" id="Stack">Stack</h2>
+<p><img src="./assets/asm-stack.png" alt="asm-stack.png" style="border-radius: 4px;"" ></p>
+<p><img src="./assets/asm-memory.png" alt="asm-memory.png" style="border-radius: 4px;"" ></p>
+<h2 style="margin-left:0px;" id="Macro">Macro</h2>
+<p>Macros will exand in the source code</p>
+<p>Single line</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+%define mulby4(x) shl x, 2
+</pre></code>
+<p></p>
+<p>Multiline:</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+%macro abs, 1; 1 is number of args
+	cmp %1, 0 ; here we access the first argument
+	jge %%done
+	neg %1
+%%done:
+
+%endmacro
+; invoke macro
+
+mov eax, -3
+abs eax
+</pre></code>
+<p></p>
+<h2 style="margin-left:0px;" id="Command_Line_Arguments">Command Line Arguments</h2>
+<p>Arguments are stored in stack and can be accessed with rbp:</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+main:
+	push rbp
+	mov rbp, rsp
+	mov rax, qword[rbp+8] ; first argument
+</pre></code>
+<p></p>
+<h2 style="margin-left:0px;" id="Functions">Functions</h2>
+<h3 style="margin-left:0px;" id="Parameter_passing">Parameter passing</h3>
+<p>Reference: <a href="https://software.intel.com/sites/default/files/article/402129/mpx-linux64-abi.pdf" target="_blank">https://software.intel.com/sites/default/files/article/402129/mpx-linux64-abi.pdf</a></p>
+<p></p>
+<p>One set of calling convention rules governs how function arguments and return values are passed. On x86-64 Linux, the first six function arguments are passed in registers <code class="inlineCoed">%rdi</code>, <code class="inlineCoed">%rsi</code>, <code class="inlineCoed">%rdx</code>, <code class="inlineCoed">%rcx</code>, <code class="inlineCoed">%r8</code>, and <code class="inlineCoed">%r9</code>, respectively. The seventh and subsequent arguments are passed on the stack, about which more below. The return value is passed in register <code class="inlineCoed">%rax</code>.</p>
+<p></p>
+<p>Creating a function and passing parameters with stack</p>
+<p><a href="https://www.cs.princeton.edu/courses/archive/spr11/cos217/lectures/15AssemblyFunctions.pdf" target="_blank">https://www.cs.princeton.edu/courses/archive/spr11/cos217/lectures/15AssemblyFunctions.pdf</a></p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+F:
+	;prologue
+	push rbp
+	mov rbp, rsp
+
+	mov rax, [rbp+16] ; first parameter
+
+epilogue:
+	mov rsp, rbp
+	pop rbp
+	ret 16 ;number of params * 8
+</pre></code>
+<p>Local variables:</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+func:
+enter 24,0
+mov rax, [rbp+16] ; first argument
+mov [rbp-8], rax ; fill value in first local var
+</pre></code>
+<p>Access to array passed via stack in function:</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+func:
+mov r8, qword [rbp+16] ; rbp+16 is the array address
+mov rax, [r8] ; now [r8] is the first element
+mov rax, [r8+1*8] ; second element
+</pre></code>
+<p></p>
+<h3 style="margin-left:0px;" id="Local_variables">Local variables</h3>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+F:
+	push rbp
+	mov rbp, rsp
+	sub rsp, 16
+
+	mov rax, [rbp-8] ; first local var
+
+	mov rsp, rbp
+	pop rbp
+	ret
+</pre></code>
+<h2 style="margin-left:0px;" id="Dynamic_Memory">Dynamic Memory</h2>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+memalloc:
+	mov rax, sys_mmap
+	mov rsi, mem_size
+	mov rdx, PROT_READ | PROT_WRITE
+	mov r10 MAP_ANONYMOUS | MAP_PRIVATE
+	syscall
+	cmp rax, -1
+	jg memAlocEnd
+	mov rsi, ErrAloc
+	call printString
+memAlocEnd:
+	ret
+
+memfree:
+	mov rax, sys_umamp
+	mov rsi, mem_size
+	mov rdi, r11
+	syscall
+	cmp rax, -1
+	jg memFreeEnd
+	mov rdi, ErrFree
+	call printString
+memFreeEnd:
+	ret
+</pre></code>
+<h2 style="margin-left:0px;" id="Converting_to_machine_code">Converting to machine code</h2>
+<p><img src="./assets/assembly-instruction-machine-code-template.png" alt="assembly-instruction-machine-code-template.png" style="border-radius: 4px;"" ></p>
+<p>field/bits/description</p>
+<p>Prefix/4/based on table for parameters and bit mode</p>
+<p>Rex/1/Only when 64 bit registers are used</p>
+<p>Reg/3/used register</p>
+<p>W/1/used register size</p>
+<p>S/1/If extended sign in operand</p>
+<p>tttn/4/condition type</p>
+<p>D/1/destintaion for register</p>
+<p>eee/3/register code in control instrcutions</p>
+<p></p>
+<h3 style="margin-left:0px;" id="Prefix">Prefix</h3>
+<p>Use the prefixes based on operand used size and address used size</p>
+<p><img src="./assets/assembly-prefix-rex.png" alt="assembly-prefix-rex.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h3 style="margin-left:0px;" id="tttn">tttn</h3>
+<p>When we have conditional jumps tttn specifies the jump type</p>
+<p></p>
+<h3 style="margin-left:0px;" id="Rex">Rex</h3>
+<p>is used for 64 bit registers or if new 32/16/8 bit registers(the ones that start with r) are used.</p>
+<p></p>
+<p>Bits</p>
+<p>4:7/reserved/0100</p>
+<p>W/3/operand size</p>
+<p>R/2/Extention for mod/rm</p>
+<p>X/1/Extension for SIB index fied</p>
+<p>B/0/Extension for RM field or SIB base or Opcode reg</p>
+<p></p>
+<p><img src="./assets/assembly-rex.png" alt="assembly-rex.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h4 style="margin-left:0px;" id="W">W</h4>
+<p><img src="./assets/Pasted image 20220530212242.png" alt="Pasted image 20220530212242.png" style="border-radius: 4px;"" ></p>
+<p>Exception for </p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+bsf reg, [mem]
+</pre></code>
+<p>code.w = 0</p>
+<p>rex.w = 1</p>
+<h4 style="margin-left:0px;" id="R">R</h4>
+<p>extends reg/Op</p>
+<h4 style="margin-left:0px;" id="X">X</h4>
+<p>extend index in SIB</p>
+<h4 style="margin-left:0px;" id="B">B</h4>
+<p>Extension for RM field or SIB base or Opcode reg</p>
+<p></p>
+<p><b>for 64</b></p>
+<p>present in the template and in Rex</p>
+<p>if old registers(without r) are used then rex is not used, otherwise</p>
+<p>This table is used for coding(with exceptions)</p>
+<p><img src="./assets/assembly-rex-w-table.png" alt="assembly-rex-w-table.png" style="border-radius: 4px;"" ></p>
+<p>exceptions</p>
+<p><code class="inlineCoed">bsf reg, memory</code> where code W is 0 and Rex.w is 1</p>
+<p><code class="inlineCoed">jump</code> for in segment jumps w is 0 and for out segment jumps is 1</p>
+<p></p>
+<p></p>
+<h3 style="margin-left:0px;" id="Reg">Reg</h3>
+<p>If D = 0: Reg codes the source operand</p>
+<p>If D = 1: Reg codes the dest operand</p>
+<p></p>
+<h3 style="margin-left:0px;" id="D">D</h3>
+<p>based on source and destination</p>
+<p><img src="./assets/assembly-d-machine-code.png" alt="assembly-d-machine-code.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p>If operation has 1 operand then D is 1</p>
+<p>If swiching operand has no effect on operation then D is from opcode </p>
+<p>If second operand is immidiate data D depends on the operation</p>
+<p></p>
+<p></p>
+<p>Exception:</p>
+<p><code class="inlineCoed">bsf reg, mem</code> then D is 0</p>
+<p>When switching source and destination does not affect the operation or source is immidiate data then D comes from opcode</p>
+<p></p>
+<p></p>
+<h3 style="margin-left:0px;" id="W">W</h3>
+<p><b>for 32 bits</b></p>
+<p><img src="./assets/assembly-w-code.png" alt="assembly-w-code.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h3 style="margin-left:0px;" id="S">S</h3>
+<p>Only when we have immidiate data</p>
+<p><img src="./assets/assembly-s-machine-code.png" alt="assembly-s-machine-code.png" style="border-radius: 4px;"" ></p>
+<h3 style="margin-left:0px;" id="Mod/RM">Mod/RM</h3>
+<p><img src="./assets/assembly-mod-rm.png" alt="assembly-mod-rm.png" style="border-radius: 4px;"" ></p>
+<p>If 64 bit register is used then RM is</p>
+<p><img src="./assets/assembly-rm-64.png" alt="assembly-rm-64.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p>Direct addressing is exception:</p>
+<p><ul style="margin-left:0px;"><li>We can use mod=00 and RM=101 for direct addressing</li></ul></p>
+<p><ul style="margin-left:0px;"><li>We can use mod 00 and RM=100 for SIB usage(preferred)</li></ul></p>
+<p><img src="./assets/assembly-direct-addressing-code.png" alt="assembly-direct-addressing-code.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p></p>
+<h3 style="margin-left:0px;" id="Base_Index_Scale">Base Index Scale</h3>
+<p><img src="./assets/assembly-base-index-scale.png" alt="assembly-base-index-scale.png" style="border-radius: 4px;"" ></p>
+<p>Used to describe adresses like <code class="inlineCoed">[eax+ecx]</code>. Base is first register and index is second register.</p>
+<p></p>
+<h3 style="margin-left:0px;" id="Displacement">Displacement</h3>
+<p>describes the <code class="inlineCoed">[ecx*4 + xxx]</code> part.</p>
+<p></p>
+<p>Rules</p>
+<p><ul style="margin-left:0px;"><li>When we have index there will be always a displacement if there is not assembler will put a 0 disp</li></ul></p>
+<p><ul style="margin-left:0px;"><li>When we don't have base and displacement is 8-bit it must be extended to 32 bits</li></ul></p>
+<p><ul style="margin-left:0px;"><li>When we don't have base and displacement then we must set displacement to 0 32 bits</li></ul></p>
+<p><ul style="margin-left:0px;"><li>when ebp is present then we must have a 8 bit displacement</li></ul></p>
+<p><ul style="margin-left:0px;"><li>When we don't have base and we have scale then 32 bit displacement is used</li></ul></p>
+<p><img src="./assets/assembly-SIB-example.png" alt="assembly-SIB-example.png" style="border-radius: 4px;"" ></p>
+<p><ul style="margin-left:0px;"><li>If SIB is not used then we don't have displacement</li></ul></p>
+<p><ul style="margin-left:20px;"><li><code class="inlineCoed">mov edx, [ebp]</code> we can only use mod/rm and we can use SIB but with SIB an 8-bit displacement is needed</li></ul></p>
+<p><ul style="margin-left:0px;"><li></li></ul></p>
+<h3 style="margin-left:0px;" id="Register_mapping_tables">Register mapping tables</h3>
+<p>in 64 mod if oeprands are 8 or 32 the first table is used for coding.</p>
+<p>16 bit addresses do not exist!</p>
+<p><img src="./assets/assembly-32-bit-register-code.png" alt="assembly-32-bit-register-code.png" style="border-radius: 4px;"" ></p>
+<p>When 64 bit registers are used:</p>
+<p><img src="./assets/assembly-64-bit-registers-code.png" alt="assembly-64-bit-registers-code.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h3 style="margin-left:0px;" id="Operations">Operations</h3>
+<h4 style="margin-left:0px;" id="Jumps">Jumps</h4>
+<p>Jumps are different for inside segment and outside segment</p>
+<p>inside segment jumps are reletive address</p>
+<p>Jumps has no fields other than disp</p>
+<p><img src="./assets/assembly-jump-cond-code.png" alt="assembly-jump-cond-code.png" style="border-radius: 4px;"" ></p>
+<p>Operations with no operand</p>
+<p><img src="./assets/assembly-operations-with-no-operand-code.png" alt="assembly-operations-with-no-operand-code.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h2 style="margin-left:0px;" id="Floating_Point">Floating Point</h2>
+<p>Source: <a href="http://rayseyfarth.com/asm/pdf/ch11-floating-point.pdf" target="_blank">http://rayseyfarth.com/asm/pdf/ch11-floating-point.pdf</a></p>
+<h3 style="margin-left:0px;" id="Stack_Based_Approach">Stack Based Approach</h3>
+<p>PC floating point operations were once done in a separate chip - 8087</p>
+<p></p>
+<h4 style="margin-left:0px;" id="Data_Movement">Data Movement</h4>
+<p>if <code class="inlineCoed">i</code> is in instruction then it's for integer</p>
+<p>if <code class="inlineCoed">p</code> is in instruction then it will push from stack</p>
+<p></p>
+<p>fld: Saves data at top of the stack</p>
+<p>parameters:<code class="inlineCoed">mem32,64,80 and st(i)</code></p>
+<p></p>
+<p>fst: Loads data from top of stack to dest, does not change stack.</p>
+<p>parameters:<code class="inlineCoed">mem32,64,80</code></p>
+<p></p>
+<p>fxch: swap with st0</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+fxch sti
+fxch ; swap st1
+</pre></code>
+<p></p>
+<h4 style="margin-left:0px;" id="Arithmetic">Arithmetic</h4>
+<p>Instructions with I work on integers</p>
+<p><img src="./assets/assembly-fp-add.png" alt="assembly-fp-add.png" style="border-radius: 4px;"" ></p>
+<p>fadd</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+fadd source [memory 32/64]
+fadd dest, source [both register]
+</pre></code>
+<p>fiadd</p>
+<p>st0 <- st0 + source</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+fiadd st0 [memory 32/16]
+</pre></code>
+<p></p>
+<p>| Instruction        | Operations                   | Operand(s) |</p>
+<hr>
+<p>| fsub source        | st0 = st0 - source           | mem32/64   |</p>
+<p>| fsub dest,src      | dest = dest - source         | both reg   |</p>
+<p>| fsubp dest,st0     | dest = dest - st0 & pop      | reg        |</p>
+<p>| fsubp              | st1 = st1 - st0              | mem/reg    |</p>
+<p>| fisub source       | st0 = st0 - source           | mem16/32   |</p>
+<p>| fisubr source      | st0 = source - st0           | mem 16/32  |</p>
+<p>| fsubr source       | source = source - st0        | mem 32/64  |</p>
+<p>| fsubr dest, srouce | dest = source - dest         | mem 32/64  |</p>
+<p>| fsubrp dest,st0    | source = source - st=0 & pop | mem 32/64  |</p>
+<p></p>
+<p>| Instruction     | Operation                 | Operand(s) |</p>
+<hr>
+<p>| fmul source     | st0 = st0 * source        | mem 32/64  |</p>
+<p>| fmul dest, src  | dest = dest * src         | both reg   |</p>
+<p>| fmulp dest, st0 | dest = st0 * source & pop | reg        |</p>
+<p>| fmulp           | st1 = st0 * st1           | -          |</p>
+<p>| fimul src       | st0 = st0 * src           | mem 16/32  |</p>
+<p></p>
+<p>| Instruction      | Operation               | Operands(s) |</p>
+<hr>
+<p>| fdiv src         | st0 = st0 /source       | mem 32/64   |</p>
+<p>| fdiv dest, src   | dest = dest / src       | reg         |</p>
+<p>| fdivp dest, st0  | dest = dest / st0 & pop | reg         |</p>
+<p>| fdivp            | st1 = st1/st0 & pop     | -           |</p>
+<p>| fidiv src        | st0 = st0/src           | mem 16/32   |</p>
+<p>| fdivr src        | st0 = src/st0           | mem 32/64   |</p>
+<p>| fdivr dest, src  | dest = dest/src         | reg         |</p>
+<p>| fdivrp st(i),st0 | sti = st0/st1 & pop     | reg         |</p>
+<p>| fdivrp           | st1 = st0/st1           | -           |</p>
+<p>| fidivr src       | st0 = src/st0           | mem 32/64   |</p>
+<p></p>
+<p>fabs calcs abs of st0 and saves back</p>
+<p></p>
+<h4 style="margin-left:0px;" id="Cmp">Cmp</h4>
+<h5 style="margin-left:0px;" id="With_Status_Register">With Status Register</h5>
+<p><img src="./assets/assembly-fp-compare.png" alt="assembly-fp-compare.png" style="border-radius: 4px;"" ></p>
+<h5 style="margin-left:0px;" id="Using_flags">Using flags</h5>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+fcomi st0, st(i)
+</pre></code>
+<p>| Result       | ZF  | PF  | CF  |</p>
+<hr>
+<p>| st0 > sti    | 0   | 0   | 0   |</p>
+<p>| st0 < sti    | 0   | 0   | 1   |</p>
+<p>| st0 = sti    | 1   | 0   | 0   |</p>
+<p>| uncomparable | 1   | 1   | 1   | </p>
+<h5 style="margin-left:0px;" id="With_Zero">With Zero</h5>
+<p>ftst: compare st0 with 0</p>
+<p></p>
+<h4 style="margin-left:0px;" id="Other">Other</h4>
+<p>fchs</p>
+<p>change sign of st0</p>
+<h4 style="margin-left:0px;" id="Examples">Examples</h4>
+<p>Write a floating point number</p>
+<p><img src="./assets/assembly-print-float-example.png" alt="assembly-print-float-example.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p></p>
+<h3 style="margin-left:0px;" id="Register_Based_Approach">Register Based Approach</h3>
+<h4 style="margin-left:0px;" id="Registers">Registers</h4>
+<p>XMM -> 128 bits</p>
+<p>YMM -> 256 bits</p>
+<p>ZMM -> 512 bits</p>
+<h4 style="margin-left:0px;" id="Instruction_Formats">Instruction Formats</h4>
+<p>postfixes:</p>
+<p><ul style="margin-left:0px;"><li>a: memory address is divisible by 16</li></ul></p>
+<p><ul style="margin-left:0px;"><li>u: memory address can be anything</li></ul></p>
+<p><ul style="margin-left:0px;"><li>ps: work with multiple floating point</li></ul></p>
+<p><ul style="margin-left:0px;"><li>pd: work with multiple double precision</li></ul></p>
+<p><ul style="margin-left:0px;"><li>ss: work with single 32 bit floating point value</li></ul></p>
+<p><ul style="margin-left:0px;"><li>sd: work with single 64 bit double value</li></ul></p>
+<p></p>
+<h4 style="margin-left:0px;" id="Data_Movement">Data Movement</h4>
+<h5 style="margin-left:0px;" id="mov">mov</h5>
+<p>movss</p>
+<p>moves a 32-bit float value to or from XMM register</p>
+<p></p>
+<p>movsd</p>
+<p>moves a 64-bit float value to or from XMM register</p>
+<p></p>
+<p><b>Notes</b>:</p>
+<p>1. There is no data conversion so the value must be float</p>
+<p></p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+movss xmm0, [x]
+movsd xmm0, [x]
+</pre></code>
+<p></p>
+<p>movaps</p>
+<p>moves 4 floating point values from/to memory address aligned at 16 byte boundary</p>
+<p></p>
+<p>movups</p>
+<p>moves 2 double values from/to any memory address</p>
+<p></p>
+<p>movapd</p>
+<p>moves 2 doubles with aligned memory</p>
+<p></p>
+<p>movupd</p>
+<p>moves 2 double to any memory address</p>
+<p></p>
+<h5 style="margin-left:0px;" id="others">others</h5>
+<p>movmsk</p>
+<p>moves sign bit of the value(s)</p>
+<p></p>
+<h4 style="margin-left:0px;" id="Data_Conversion">Data Conversion</h4>
+<p>Instructions has destination and source</p>
+<p>When converting from memory a size qualifier is needed like <code class="inlineCoed">dword</code></p>
+<p></p>
+<p><b>cvtss2sd</b></p>
+<p>converts a single float number to a double</p>
+<p><b>cvtps2pd</b></p>
+<p>converts 2 float numbers to 2 doubles</p>
+<p><b>cvtsd2ss</b></p>
+<p>convert a single double number to float number</p>
+<p><b>cvtpd2ps</b></p>
+<p>convert 2 doubles to 2 float numbers</p>
+<p></p>
+<p><b>cvtss2si</b> converts a float to a double word or quad word integer</p>
+<p><b>cvtsd2si</b> converts a float to a double word or quad word integer</p>
+<p><b>cvtsi2ss</b></p>
+<p><b>cvtsd2ss</b></p>
+<p>These 2 round the value</p>
+<p><b>cvttss2si</b> and <b>cvttsd2si</b> convert by truncation</p>
+<p>has also p versions to convert multiple integers to float.</p>
+<p></p>
+<h4 style="margin-left:0px;" id="Arithmetic">Arithmetic</h4>
+<p>All the instructions:</p>
+<p><img src="./assets/asm-floating-point-arithmetic-instructions.png" alt="asm-floating-point-arithmetic-instructions.png" style="border-radius: 4px;"" ></p>
+<p>Examine one of them as an example:</p>
+<p>addss</p>
+<p>add single float number to another</p>
+<p>addsd</p>
+<p>add single double number to another</p>
+<p>addps</p>
+<p>add 4 floats to another 4 floats</p>
+<p>addpd</p>
+<p>same as above with double</p>
+<p></p>
+<h4 style="margin-left:0px;" id="Comparison">Comparison</h4>
+<p></p>
+<h4 style="margin-left:0px;" id="Math_and_Logic_functions">Math and Logic functions</h4>
+<p>minss/sd/ps/pd</p>
+<p>maxdsd/ss/ps/pd</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+movss xmm0, [x] ; move x into xmm0
+maxss xmm0, [y] ; xmm0 has max(x,y)
+movapd xmm0, [a] ; move a[0] and a[1] into xmm0
+minpd xmm0, [b] ; xmm0[0] has min(a[0],b[0]) xmm0[1] has min(a[1],b[1])
+</pre></code>
+<p>other instructions</p>
+<p>sqrt</p>
+<p></p>
+<p>and</p>
+<h4 style="margin-left:0px;" id="Examples">Examples</h4>
+<p>distance in 3D space:</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+distance3d:
+	movss xmm0, [rdi] ; x from first point
+	subss xmm0, [rsi] ; subtract x from second point
+	mulss xmm0, xmm0 ; (x1-x2)^2
+	movss xmm1, [rdi+4] ; y from first point
+	subss xmm1, [rsi+4] ; subtract y from second point
+	mulss xmm1, xmm1 ; (y1-y2)^2
+	movss xmm2, [rdi+8] ; z from first point
+	subss xmm2, [rsi+8] ; subtract z from second point
+	mulss xmm2, xmm2 ; (z1-z2)^2
+	addss xmm0, xmm1 ; add x and y parts
+	addss xmm0, xmm2 ; add z part
+	sqrt xmm0, xmm0
+	ret
+</pre></code>
+<h2 style="margin-left:0px;" id="Parallel_Processing_SIMD">Parallel Processing SIMD</h2>
+<p><a href="https://medium.com/hackernoon/harnessing-the-power-of-simd-sse-assembly-instructions-for-good-fdaa8ce34e9a" target="_blank">https://medium.com/hackernoon/harnessing-the-power-of-simd-sse-assembly-instructions-for-good-fdaa8ce34e9a</a></p>
+<p><a href="https://linuxnasm.be/41-programming/mx86alp/mx86alp20" target="_blank">https://linuxnasm.be/41-programming/mx86alp/mx86alp20</a></p>
+<p><a href="https://www.codeproject.com/Articles/5298048/Using-SIMD-to-Optimize-x86-Assembly-Code-in-Array" target="_blank">https://www.codeproject.com/Articles/5298048/Using-SIMD-to-Optimize-x86-Assembly-Code-in-Array</a></p>
+<h3 style="margin-left:0px;" id="Available_Registers">Available Registers</h3>
+<p>MMX: It can be used for both integers and floating points. 128 bits</p>
+<p>0-7</p>
+<p>MMX</p>
+<p>7 registers</p>
+<p>each 64 bit</p>
+<h3 style="margin-left:0px;" id="AVX">AVX</h3>
+<p>32 XMM</p>
+<p>32 YMM 256 bit</p>
+<p>32 ZMM 512 bit</p>
+<p></p>
+<p>The way of accessing these registers</p>
+<p><img src="./assets/simd-programming-registers.png" alt="simd-programming-registers.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h3 style="margin-left:0px;" id="Overflow_and_underflow">Overflow and underflow</h3>
+<p>There are flags to determine how to handle it:</p>
+<p>Saturation</p>
+<p></p>
+<p>Unsigned</p>
+<p>20000</p>
+<p>15000</p>
+<p>32767</p>
+<p></p>
+<p>Signed</p>
+<p></p>
+<p>Wrap-around</p>
+<p>20000</p>
+<p>15000</p>
+<p><ul style="margin-left:0px;"><li>30536</li></ul></p>
+<h3 style="margin-left:0px;" id="K_Registers">K Registers</h3>
+<h4 style="margin-left:0px;" id="Instruction_Format">Instruction Format</h4>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+instruction dest, source, source
+</pre></code>
+<p>Note: Dest is always a K register</p>
+<p></p>
+<p>Postfixes:</p>
+<p>size -> b,w,d,q</p>
+<p></p>
+<p><b>kmov</b> kl, {k2/r/m16}</p>
+<p>moves a block of size from source to destination.</p>
+<p><b>kadd</b> k1, k2, k3</p>
+<p>add the first block of specified size</p>
+<p></p>
+<p></p>
+<p><b>kand</b></p>
+<p><b>kandn</b></p>
+<p><b>kor</b></p>
+<p><b>kxor</b></p>
+<p><b>kxnor</b></p>
+<p></p>
+<p><b>kshiftl</b> k1, k2, imm8</p>
+<p>kshiftlb: moves 8 bit of the k2 by imm value and store in k1</p>
+<p></p>
+<p><b>kshiftr</b> like above</p>
+<p></p>
+<p>The following operations have only two operands:</p>
+<p><b>knot</b></p>
+<p><b>ktest</b></p>
+<p><b>kortest</b></p>
+<p>or first block of size from k2 and k2 if it's zero then zf = 1 else if it's all 1 then cf=1</p>
+<p></p>
+<p>kunpck{b}{w}</p>
+<p>first bits of k2 and k3 are connected and written in k1</p>
+<p></p>
+<h3 style="margin-left:0px;" id="Integer_Operations">Integer Operations</h3>
+<p>instruction format:</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+instruction dest, source
+instruction dest, {k}, {z}, source, source
+</pre></code>
+<p>postfixes are for size and handling overflow and underflow</p>
+<p>| p   | Meaning               |</p>
+<hr>
+<p>| B   | bytes                 |</p>
+<p>| W   | words                 |</p>
+<p>| D   | double words          |</p>
+<p>| q   | quad words            |</p>
+<p>| s   | signed saturation     |</p>
+<p>| us  | unsigned saturation   |</p>
+<p>| a   | 16 bit aligned memory |</p>
+<p>| u   | un aligned memory     |</p>
+<p><ul style="margin-left:0px;"><li></li></ul></p>
+<p><ul style="margin-left:0px;"><li>prefixes</li></ul></p>
+<p><ul style="margin-left:0px;"><li>| prefix | operands    |</li></ul></p>
+<hr>
+<p><ul style="margin-left:0px;"><li>| p      | xmm, mmx    |</li></ul></p>
+<p><ul style="margin-left:0px;"><li>| v, vp  | xmm,zmm,ymm |</li></ul></p>
+<p></p>
+<p><b>k</b> is mask register it will not include the bits that are 1 in k in the operation.</p>
+<p><b>z</b> is zero register it sets ignored bits that are specified in k to zero.</p>
+<p></p>
+<p>if h is in instruction then it's Horizantal:</p>
+<p><img src="./assets/horizantal-sum.png" alt="horizantal-sum.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h4 style="margin-left:0px;" id="Data_movement">Data movement</h4>
+<p><b>mov</b></p>
+<p>mov{b/w/d/q}</p>
+<pre class="codeblock"><code style="tab-size: 4;" class=" codeblock">
+movd xmm1,eax ; moves first 32 bits from eax to xmm1
+</pre></code>
+<p>source and dest can only be xmm or mmx with other registers. if has v then source and dest can only be xmm(from rule above).</p>
+<p></p>
+<p><b>movdq</b></p>
+<p></p>
+<p>movdqa</p>
+<p>moves 128/256 data into dest</p>
+<p>if has a v prefix it's 256 bit</p>
+<p></p>
+<p>32movdqa</p>
+<p>to move each 32 bit into a new 32 bit block in dest register</p>
+<p>can use mask register to ignore some blocks</p>
+<p></p>
+<p></p>
+<p><b>broadcast</b></p>
+<p>{vp/p}broadcast{size} dest, source</p>
+<p><img src="./assets/asm-simd-broadcast.png" alt="asm-simd-broadcast.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p>packing/unpacking:</p>
+<p></p>
+<p><b>packsswb</b></p>
+<p><img src="./assets/packsswb.png" alt="packsswb.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p>vpackssdw example:</p>
+<p><img src="./assets/vpackssdw.png" alt="vpackssdw.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<p><b>punpck</b> </p>
+<p>For extending</p>
+<p>has two modes:</p>
+<p><ul style="margin-left:0px;"><li>Only do this with high bytes</li></ul></p>
+<p><ul style="margin-left:0px;"><li>Only do this with low bytes</li></ul></p>
+<p>first picks from source then from dest then goes to next section(byte,word,...)</p>
+<p><code class="inlineCoed">punpckhbw</code></p>
+<p><img src="./assets/punpckhbw.png" alt="punpckhbw.png" style="border-radius: 4px;"" ></p>
+<p><code class="inlineCoed">punpcklbw</code> for low bytes</p>
+<p></p>
+<p><b>shufps</b> XMM XMM/mem128 imm</p>
+<p><img src="./assets/Pasted image 20220702134336.png" alt="Pasted image 20220702134336.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h4 style="margin-left:0px;" id="Arithmetic">Arithmetic</h4>
+<p>also has a horizontal version.</p>
+<p></p>
+<p><b>padd</b></p>
+<p>padd{size}: add size-bit size-bit from source to dest</p>
+<p>vpadd{size}: adds second and third operand size by size and store in dest.</p>
+<p></p>
+<p><b>psub</b></p>
+<p>psub{size} mmx, {mmx/m64} also xmm/128</p>
+<p>phadd{size} mmx/xmm, {mmx/64}/{xmm/128}</p>
+<p>works horizontally </p>
+<p></p>
+<p><b>pmul</b></p>
+<p>pmuldq</p>
+<p>multiply 4 32-bit numbers and put 64 bits result in dest.</p>
+<p></p>
+<p>might have l and h to work with low and high bits of destionation.</p>
+<p>pmulh{size}</p>
+<p>multiple and saves high bit block of answer.</p>
+<p>should be used with mull.</p>
+<p>pmull{size}</p>
+<p><img src="./assets/pmulhw.png" alt="pmulhw.png" style="border-radius: 4px;"" ></p>
+<p>pmul{size}</p>
+<p>multiply block by block and save to dest</p>
+<p></p>
+<p><b>pmadd</b>{size1}{size2}</p>
+<p>splits the inputs into size1 chunks and multiplies them together(so each multiplication doubles the chunk size) then adds chunks of size1 from the answer to combine them into a chunk of size2</p>
+<p><img src="./assets/pmadd.png" alt="pmadd.png" style="border-radius: 4px;"" ></p>
+<p></p>
+<h4 style="margin-left:0px;" id="Comparison">Comparison</h4>
+<p>compare block by block and put all ones in the block if the criteria is met.</p>
+<p><ul style="margin-left:0px;"><li>pcmpeq{size}</li></ul></p>
+<p><ul style="margin-left:0px;"><li>pcmplt{size}</li></ul></p>
+<p><ul style="margin-left:0px;"><li>pcmpgt{size}</li></ul></p>
+<p></p>
+<h4 style="margin-left:0px;" id="Logical">Logical</h4>
+<p>pand 3</p>
+<p>pandn 3</p>
+<p>pxor 3</p>
+<p>por 3</p>
+<p></p>
+<p>Shifts are useful for division</p>
+<p>in bytes</p>
+<p>in shifts, the second operand is immediate data to specify shift count.</p>
+<p>psllw</p>
+<p>shift left logical </p>
+<p>2, 3 if comes with VP</p>
+<p>moves word wise</p>
+<p><img src="./assets/pshllw.png" alt="pshllw.png" style="border-radius: 4px;"" ></p>
+<p>psrl 2</p>
+<p>shift right logical</p>
+<p>srldq</p>
+<p>in shifts if the operand is bigger than 128 bits then the instruction operates on each 128 bit separately.</p>
+<h2 style="margin-left:0px;" id="Input/Output_Devices">Input/Output Devices</h2>
+<p><b>in</b> dest, edx</p>
+<p>reads from port address specified in edx into destination.</p>
+<p></p>
+<p>Other versions for specific sizes:</p>
+<p><b>insb</b>, insw, insd</p>
+<p>all of them use <code class="inlineCoed">[rdi]</code> as destination</p>
+<p></p>
+<p><b>out</b> edx, eax</p>
+<p>writes data from eax into port specified in edx</p>
+<p></p>
+<p>Other versions for specific sizes:</p>
+<p><b>outsb</b>, outsw, outsd</p>
+<p>all of them use <code class="inlineCoed">[rsi]</code> as destination</p>
+</div>
+<div style="width:345px; padding-top: 20px;; position:absolute; top:0; left:0; overflow:auto;">
+	<iframe src="treeview.html" width="340px" frameBorder="0" height="900px"></iframe>
+</div>
+</div>
+</body>
+</html>
